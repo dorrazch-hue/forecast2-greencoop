@@ -1,0 +1,18 @@
+service: "service:SeattleEnergyService"
+
+labels:
+  owner: Cherif Dorra
+  project: Seattle Energy Prediction
+
+include:
+  - "service.py"
+
+python:
+  packages:
+    - scikit-learn
+    - pandas
+    - numpy
+    - pydantic
+
+models:
+  - tag: "seattle_energy_model:latest"
