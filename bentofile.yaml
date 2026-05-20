@@ -13,6 +13,7 @@ python:
     - pandas
     - numpy
     - pydantic
+    - aiohappyeyeballs==2.4.4
 
 models:
   - tag: "seattle_energy_model:latest"

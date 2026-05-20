@@ -43,7 +43,7 @@ sklearn_model = model_ref.load_model()
 
 
 # ============================================
-# DEFINITION DU SERVICE — syntaxe BentoML 1.x
+# DEFINITION DU SERVICE
 # ============================================
 @bentoml.service()
 class SeattleEnergyService:
@@ -108,9 +108,9 @@ class SeattleEnergyService:
         prediction = np.expm1(log_prediction[0])
 
         return {
-            "consommation_predite_kBtu": round(float(prediction), 2),
+            "consommation_predite_kBtu_WN": round(float(prediction), 2),
             "batiment_age": building_age,
             "zone_geographique": zone,
             "tranche_age": tranche,
-            "message": f"Ce batiment devrait consommer environ {round(float(prediction)/1000000, 2)} millions de kBtu par an."
+            "message": f"Ce batiment devrait consommer environ {round(float(prediction)/1000000, 2)} millions de kBtu par an (weather normalized)."
         }

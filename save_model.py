@@ -2,16 +2,16 @@ import bentoml
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.model_selection import cross_validate
-from sklearn.preprocessing import StandardScaler
+import os
 
 # ============================================
 # 1. CHARGEMENT DES DONNÉES
 # ============================================
-building_consumption = pd.read_csv("/Users/dorra/Desktop/2016_Building_Energy_Benchmarking.csv")
+csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "2016_Building_Energy_Benchmarking.csv")
+building_consumption = pd.read_csv(csv_path)
 
 # ============================================
-# 2. NETTOYAGE (même logique que le notebook)
+# 2. NETTOYAGE
 # ============================================
 # Filtrage non-résidentiels
 residential_types = ['Multifamily LR (1-4)', 'Multifamily MR (5-9)', 'Multifamily HR (10+)']
@@ -19,15 +19,27 @@ building_consumption = building_consumption[
     ~building_consumption['BuildingType'].isin(residential_types)
 ]
 
+# Filtrage ComplianceStatus
+building_consumption = building_consumption[
+    building_consumption['ComplianceStatus'] == 'Compliant'
+]
+
+# Suppression des outliers marqués
+building_consumption = building_consumption[
+    ~building_consumption['Outlier'].isin(['Low outlier', 'High outlier'])
+]
+
 # Suppression consommations nulles/négatives
 building_consumption = building_consumption[
-    building_consumption['SiteEnergyUse(kBtu)'] > 0
+    building_consumption['SiteEnergyUseWN(kBtu)'] > 0
 ]
 
 # Suppression surfaces nulles
 building_consumption = building_consumption[
     building_consumption['PropertyGFATotal'] > 0
 ]
+
+print(f"Nombre de batiments apres nettoyage : {len(building_consumption)}")
 
 # ============================================
 # 3. FEATURE ENGINEERING
@@ -75,24 +87,27 @@ colonnes_a_garder = [
     'PropertyGFATotal', 'NumberofBuildings', 'NumberofFloors',
     'PrimaryPropertyType', 'BuildingAge', 'UsageMultiple',
     'HasGas', 'HasSteam', 'TrancheAge', 'ZoneGeo',
-    'SiteEnergyUse(kBtu)'
+    'SiteEnergyUseWN(kBtu)'
 ]
 
 df_model = building_consumption[colonnes_a_garder].copy()
-df_model['Target'] = np.log1p(df_model['SiteEnergyUse(kBtu)'])
+df_model['Target'] = np.log1p(df_model['SiteEnergyUseWN(kBtu)'])
 
-# Suppression outliers
+# Suppression outliers quantiles
 q_low = df_model['Target'].quantile(0.01)
 q_high = df_model['Target'].quantile(0.99)
 df_model = df_model[
-    (df_model['Target'] >= q_low) & 
+    (df_model['Target'] >= q_low) &
     (df_model['Target'] <= q_high)
 ]
 
 # Separation X et y
 y = df_model['Target']
-X = df_model.drop(columns=['Target', 'SiteEnergyUse(kBtu)'])
+X = df_model.drop(columns=['Target', 'SiteEnergyUseWN(kBtu)'])
 X = pd.get_dummies(X, columns=['PrimaryPropertyType', 'TrancheAge', 'ZoneGeo'])
+
+print(f"Nombre de batiments pour la modelisation : {len(X)}")
+print(f"Nombre de features : {X.shape[1]}")
 
 # ============================================
 # 5. ENTRAINEMENT DU MODELE
@@ -104,7 +119,7 @@ model = RandomForestRegressor(
     random_state=42
 )
 model.fit(X, y)
-print(f"Modele entraine sur {len(X)} batiments avec {X.shape[1]} features")
+print("Modele entraine avec succes !")
 
 # ============================================
 # 6. SAUVEGARDE AVEC BENTOML
