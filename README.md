@@ -56,7 +56,7 @@ curl -X POST https://seattle-energy-api-jfbg37q7kq-ew.a.run.app/predict \
 ## Redéployer sur GCP Cloud Run
 ```bash
 gcloud run deploy seattle-energy-api \
-  --image gcr.io/project-2e4c7d68-38e1-426b-af0/seattle_energy_service:amd64 \
+  --image gcr.io/project-2e4c7d68-38e1-426b-af0/seattle_energy_service:v3 \
   --platform managed \
   --region europe-west1 \
   --allow-unauthenticated \
@@ -69,8 +69,8 @@ gcloud run services delete seattle-energy-api --region europe-west1
 ```
 
 ## Fichiers du projet
-- `save_model.py` : sauvegarde du modèle avec BentoML
-- `service.py` : logique de l'API et validation des données
+- `save_model.py` : sauvegarde et entraînement du modèle avec BentoML
+- `service.py` : logique de l'API et validation des données avec Pydantic
 - `bentofile.yaml` : configuration du déploiement Docker
 
 ## Format des données acceptées
@@ -85,3 +85,27 @@ gcloud run services delete seattle-energy-api --region europe-west1
 | HasSteam | int | Présence de vapeur | 0 ou 1 |
 | Latitude | float | Latitude Seattle | 47.0-48.0 |
 | UsageMultiple | int | Usage multiple | 0 ou 1 |
+
+## Types de bâtiments acceptés
+- Small- and Mid-Sized Office
+- Warehouse
+- Large Office
+- K-12 School
+- Retail Store
+- Hotel
+- Other
+- Mixed Use Property
+- Worship Facility
+- Distribution Center
+- Hospital
+- Residence Hall
+- Medical Office
+- Laboratory
+- Refrigerated Warehouse
+- Restaurant
+- Low-Rise Multifamily
+- Office
+- Senior Care Community
+- University
+- Self-Storage Facility
+- Supermarket / Grocery Store
