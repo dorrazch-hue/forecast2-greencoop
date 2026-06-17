@@ -14,6 +14,11 @@ models:
         tests:
           - unique
           - not_null
+      - name: network
+        description: "Réseau d'origine de la station"
+        tests:
+          - accepted_values:
+              values: ['infoclimat', 'weather_underground']
 
   - name: fct_weather_observations
     description: "Table de faits des observations météo, une ligne par relevé et par station"
@@ -30,4 +35,32 @@ models:
         tests:
           - not_null
       - name: temperature_celsius
-        description: "Température en degrés Celsius"
+        description: "Température en degrés Celsius (plage plausible pour le climat des Hauts-de-France : -25°C à 45°C)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -25
+              max_value: 45
+      - name: humidity_percent
+        description: "Humidité relative en pourcentage (0 à 100)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100
+      - name: pressure_hpa
+        description: "Pression atmosphérique en hPa (plage plausible au niveau de la mer : 870 à 1085 hPa)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 870
+              max_value: 1085
+      - name: wind_speed_kmh
+        description: "Vitesse moyenne du vent en km/h (plage plausible : 0 à 250 km/h)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 250
+      - name: uv_index
+        description: "Indice UV (plage standard : 0 à 16)"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 16
