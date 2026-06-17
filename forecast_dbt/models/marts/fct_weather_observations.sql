@@ -1,3 +1,13 @@
+{{
+    config(
+        indexes=[
+            {'columns': ['station_key'], 'type': 'btree'},
+            {'columns': ['observed_at_utc'], 'type': 'btree'},
+            {'columns': ['station_key', 'observed_at_utc'], 'type': 'btree'}
+        ]
+    )
+}}
+
 with observations as (
 
     select * from {{ ref('int_weather_observations_unioned') }}

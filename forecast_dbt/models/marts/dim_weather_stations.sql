@@ -1,3 +1,11 @@
+{{
+    config(
+        indexes=[
+            {'columns': ['station_key'], 'type': 'btree', 'unique': True}
+        ]
+    )
+}}
+
 with stations as (
 
     select 'bergues' as station_key, '000R5' as station_id, 'Bergues' as station_name,
