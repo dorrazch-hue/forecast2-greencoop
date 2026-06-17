@@ -10,6 +10,8 @@ venv/
 **/dbt_packages/
 **/target/
 **/logs/
+google-cloud-sdk/
+google-cloud-cli-458.0.1-darwin-arm.tar.gz
 
 # Données volumineuses / fichiers de test générés
 *.json
