@@ -2,22 +2,53 @@ version: 2
 
 sources:
   - name: raw_infoclimat
-    description: "Données météo brutes ingérées depuis l'API InfoClimat via Meltano"
+    description: "Donnees meteo brutes ingérees depuis l'API InfoClimat"
     schema: raw_infoclimat
     tables:
       - name: bergues
-        description: "Relevés météo bruts de la station InfoClimat de Bergues (000R5)"
+        description: "Releves recents Bergues (000R5) via Meltano"
         loaded_at_field: _sdc_extracted_at
         columns:
           - name: dh_utc
-            description: "Horodatage UTC du relevé"
-          - name: id_station
-            description: "Identifiant de la station InfoClimat"
+            description: "Horodatage UTC du releve"
       - name: hazebrouck
-        description: "Relevés météo bruts de la station InfoClimat de Hazebrouck (STATIC0010)"
+        description: "Releves recents Hazebrouck (STATIC0010) via Meltano"
         loaded_at_field: _sdc_extracted_at
         columns:
           - name: dh_utc
-            description: "Horodatage UTC du relevé"
-          - name: id_station
-            description: "Identifiant de la station InfoClimat"
+            description: "Horodatage UTC du releve"
+      - name: bergues_hist
+        description: "Releves historiques Bergues (oct 2024)"
+        columns:
+          - name: dh_utc
+            description: "Horodatage UTC du releve"
+      - name: hazebrouck_hist
+        description: "Releves historiques Hazebrouck (oct 2024)"
+        columns:
+          - name: dh_utc
+            description: "Horodatage UTC du releve"
+      - name: armentieres
+        description: "Releves historiques Armentieres (oct 2024)"
+        columns:
+          - name: dh_utc
+            description: "Horodatage UTC du releve"
+      - name: lille_lesquin
+        description: "Releves historiques Lille-Lesquin (oct 2024)"
+        columns:
+          - name: dh_utc
+            description: "Horodatage UTC du releve"
+
+  - name: raw_weather_underground
+    description: "Donnees meteo brutes Weather Underground"
+    schema: raw_weather_underground
+    tables:
+      - name: la_madeleine
+        description: "Releves La Madeleine ILAMAD25 (jan-jul 2024)"
+        columns:
+          - name: observed_at
+            description: "Horodatage du releve"
+      - name: ichtegem
+        description: "Releves Ichtegem IICHTE19 (jan-jul 2024)"
+        columns:
+          - name: observed_at
+            description: "Horodatage du releve"

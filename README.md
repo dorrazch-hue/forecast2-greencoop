@@ -1,32 +1,38 @@
-\# Forecast 2.0 - Pipeline de données météo (GreenCoop)
+\# Forecast 2.0 - Pipeline de donnees meteo (GreenCoop)
 
 
 
-Pipeline ELT pour le projet Forecast 2.0 : ingestion des données météo de stations InfoClimat et Weather Underground, transformation via DBT, en vue d'améliorer les modèles de prévision de la demande électrique.
+Pipeline ELT pour le projet Forecast 2.0 : ingestion des donnees meteo de stations InfoClimat et Weather Underground, transformation via DBT, en vue d'ameliorer les modeles de prevision de la demande electrique.
 
 
 
 \## Stack technique
 
-\- \*\*PostgreSQL\*\* (Docker, cible RDS sur AWS à terme)
 
-\- \*\*Meltano\*\* (ELT, remplace Airbyte pour des raisons de stabilité)
 
-\- \*\*DBT\*\* (transformation, staging/intermediate/marts, schéma en étoile)
+\- PostgreSQL (Docker, cible RDS sur AWS a terme)
+
+\- Meltano (ELT, remplace Airbyte pour des raisons de stabilite)
+
+\- DBT (transformation, staging/intermediate/marts, schema en etoile)
 
 
 
 \## Structure
 
-\- `docker-compose.yml` : déploiement local de PostgreSQL
 
-\- `forecast\_meltano/` : configuration Meltano (extracteurs, chargeurs)
 
-\- `forecast\_dbt/` : projet DBT (modèles, tests, documentation)
+\- docker-compose.yml : deploiement local de PostgreSQL
+
+\- forecast\_meltano/ : configuration Meltano (extracteurs, chargeurs)
+
+\- forecast\_dbt/ : projet DBT (modeles, tests, documentation)
 
 
 
 \## Statut
 
-Voir le journal de bord du projet pour le détail de l'avancement par étape.
+
+
+Voir le journal de bord du projet pour le detail de l'avancement par etape.
 

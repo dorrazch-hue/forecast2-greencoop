@@ -20,9 +20,15 @@ with stations as (
 
     union all
 
-    select 'armentieres' as station_key, '00052' as station_id, 'Armentières' as station_name,
+    select 'armentieres' as station_key, '00052' as station_id, 'Armentieres' as station_name,
            50.689 as latitude, 2.877 as longitude, 16 as elevation_m,
            'France' as city, null as state, 'infoclimat' as network, 'StatIC' as hardware
+
+    union all
+
+    select 'lille_lesquin' as station_key, '07015' as station_id, 'Lille-Lesquin' as station_name,
+           50.563 as latitude, 3.097 as longitude, 47 as elevation_m,
+           'Lille' as city, null as state, 'infoclimat' as network, 'SYNOP' as hardware
 
     union all
 
@@ -32,7 +38,7 @@ with stations as (
 
     union all
 
-    select 'ichtegem' as station_key, 'IICHTE19' as station_id, 'WeerstationBS' as station_name,
+    select 'ichtegem' as station_key, 'IICHTE19' as station_id, 'Ichtegem' as station_name,
            51.092 as latitude, 2.999 as longitude, 15 as elevation_m,
            'Ichtegem' as city, null as state, 'weather_underground' as network, 'EasyWeatherV1.6.6' as hardware
 
