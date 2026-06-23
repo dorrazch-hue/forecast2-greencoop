@@ -1,9 +1,13 @@
 import psycopg2
+import os
 
 RDS_HOST = "forecast2-db.chqu82ekqm8t.eu-west-3.rds.amazonaws.com"
 RDS_USER = "forecast_user"
-RDS_PASS = "Forecast2026!"
+RDS_PASS = os.environ.get("RDS_PASSWORD")
 RDS_DB = "postgres"
+
+if not RDS_PASS:
+    raise ValueError("Variable RDS_PASSWORD non definie !")
 
 local = psycopg2.connect(host="localhost", port=5432, database="forecast_db", user="forecast_user", password="forecast_pass")
 rds = psycopg2.connect(host=RDS_HOST, port=5432, database=RDS_DB, user=RDS_USER, password=RDS_PASS)
@@ -27,7 +31,7 @@ for schema, tbls in tables.items():
             continue
         col_defs = ", ".join([f"{c[0]} {c[1]}" for c in columns])
         col_names = ", ".join([c[0] for c in columns])
-        rds_cur.execute(f"DROP TABLE IF EXISTS {schema}.{table};")
+        rds_cur.execute(f"DROP TABLE IF EXISTS {schema}.{table} CASCADE;")
         rds_cur.execute(f"CREATE TABLE {schema}.{table} ({col_defs});")
         local_cur.execute(f"SELECT {col_names} FROM {schema}.{table};")
         rows = local_cur.fetchall()
