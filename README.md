@@ -1,8 +1,74 @@
-\# Forecast 2.0 - Pipeline de donnees meteo (GreenCoop)
+\# Forecast 2.0 — Pipeline de données météo
 
 
 
-Pipeline ELT pour le projet Forecast 2.0 : ingestion des donnees meteo de stations InfoClimat et Weather Underground, transformation via DBT, en vue d'ameliorer les modeles de prevision de la demande electrique.
+\*\*GreenCoop | Hauts-de-France | Data Engineering\*\*
+
+
+
+Pipeline ELT automatisé intégrant 6 stations météo semi-professionnelles pour alimenter les modèles de prévision de la demande électrique du projet Forecast 2.0.
+
+
+
+\---
+
+
+
+\## Résultats
+
+
+
+| Indicateur | Valeur |
+
+|---|---|
+
+| Stations intégrées | 6 (InfoClimat + Weather Underground) |
+
+| Observations totales | 6 471 |
+
+| Tests de qualité | 13/13 PASS |
+
+| Déploiement | AWS RDS PostgreSQL (eu-west-3 Paris) |
+
+
+
+\---
+
+
+
+\## Sources de données
+
+
+
+\### Réseau InfoClimat
+
+| Station | Code | Statut |
+
+|---|---|---|
+
+| Bergues | 000R5 | Actif — pipeline Meltano automatisé |
+
+| Hazebrouck | STATIC0010 | Actif — pipeline Meltano automatisé |
+
+| Armentières | 00052 | Données historiques (oct 2024) |
+
+| Lille-Lesquin | 07015 | Données historiques (oct 2024) |
+
+
+
+\### Réseau Weather Underground
+
+| Station | Code | Statut |
+
+|---|---|---|
+
+| La Madeleine (FR) | ILAMAD25 | Données historiques (jan-jul 2024) |
+
+| Ichtegem (BE) | IICHTE19 | Données historiques (jan-jul 2024) |
+
+
+
+\---
 
 
 
@@ -10,29 +76,25 @@ Pipeline ELT pour le projet Forecast 2.0 : ingestion des donnees meteo de statio
 
 
 
-\- PostgreSQL (Docker, cible RDS sur AWS a terme)
+| Outil | Version | Rôle |
 
-\- Meltano (ELT, remplace Airbyte pour des raisons de stabilite)
+|---|---|---|
 
-\- DBT (transformation, staging/intermediate/marts, schema en etoile)
+| Python | 3.11 | Scripts d'ingestion, environnement |
 
+| Meltano | 4.2.0 | ELT automatisé (remplace Airbyte) |
 
+| DBT | 1.8.0 | Transformation, tests, documentation |
 
-\## Structure
+| PostgreSQL | 15 local / 18 RDS | Stockage |
 
-
-
-\- docker-compose.yml : deploiement local de PostgreSQL
-
-\- forecast\_meltano/ : configuration Meltano (extracteurs, chargeurs)
-
-\- forecast\_dbt/ : projet DBT (modeles, tests, documentation)
+| AWS RDS | db.t4g.micro | Production |
 
 
 
-\## Statut
+\---
 
 
 
-Voir le journal de bord du projet pour le detail de l'avancement par etape.
+\## Structure du projet
 
