@@ -1,6 +1,10 @@
 import psycopg2
+import os
 from openpyxl import load_workbook
 from datetime import datetime
+
+# Chemins relatifs au dossier du script
+DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 
 conn = psycopg2.connect(
     host="localhost", port=5432,
@@ -84,13 +88,19 @@ def make_ts(sheet_name, time_val):
     except:
         return None
 
+# Fichiers Excel a placer dans forecast_meltano/data/
+# Voir forecast_meltano/data/README.md pour les instructions
 files = {
-    'la_madeleine': r'C:\Users\zitou\Downloads\Weather+Underground+-+La+Madeleine,+FR.xlsx',
-    'ichtegem': r'C:\Users\zitou\Downloads\Weather+Underground+-+Ichtegem,+BE.xlsx',
+    'la_madeleine': os.path.join(DATA_DIR, 'Weather_Underground_La_Madeleine_FR.xlsx'),
+    'ichtegem': os.path.join(DATA_DIR, 'Weather_Underground_Ichtegem_BE.xlsx'),
 }
 
 total = 0
 for table, filepath in files.items():
+    if not os.path.exists(filepath):
+        print(f"{table}: fichier non trouve ({filepath})")
+        print(f"  -> Placez le fichier Excel dans forecast_meltano/data/")
+        continue
     wb = load_workbook(filepath, read_only=True)
     count = 0
     skipped = 0
@@ -109,24 +119,3 @@ for table, filepath in files.items():
                 INSERT INTO raw_weather_underground.{table}
                 (observed_at, temperature_celsius, dew_point_celsius, humidity_pct,
                  wind_direction, wind_speed_kmh, wind_gust_kmh, pressure_hpa,
-                 precip_rate_mm, precip_accum_mm, uv_index, solar_wm2)
-                VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-            """, (
-                ts,
-                f_to_c(row[1]), f_to_c(row[2]),
-                clean(row[3]).replace('%','').strip() if clean(row[3]) else None,
-                clean(row[4]),
-                mph_to_kmh(row[5]), mph_to_kmh(row[6]),
-                inhg_to_hpa(row[7]),
-                in_to_mm(row[8]), in_to_mm(row[9]),
-                clean(row[10]),
-                clean(row[11]).replace('w/m2','').strip() if clean(row[11]) else None,
-            ))
-            count += 1
-    conn.commit()
-    print(f"{table}: {count} releves charges ({skipped} ignores)")
-    total += count
-
-print(f"Total: {total} releves charges!")
-cur.close()
-conn.close()
