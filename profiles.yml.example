@@ -1,0 +1,24 @@
+# Copier ce fichier dans C:\Users\<votre_user>\.dbt\profiles.yml
+# Remplacer les valeurs entre < > par vos vraies valeurs
+
+forecast_dbt:
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      user: forecast_user
+      password: forecast_pass
+      dbname: forecast_db
+      schema: public
+      threads: 4
+    prod:
+      type: postgres
+      host: forecast2-db.chqu82ekqm8t.eu-west-3.rds.amazonaws.com
+      port: 5432
+      user: forecast_user
+      password: "{{ env_var('RDS_PASSWORD') }}"
+      dbname: postgres
+      schema: public
+      threads: 4
+  target: dev
