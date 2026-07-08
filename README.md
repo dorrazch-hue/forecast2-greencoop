@@ -11,10 +11,11 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 | Indicateur | Valeur |
 |---|---|
 | Stations intégrées | 6 (InfoClimat + Weather Underground) |
-| Observations totales | 6 471 |
-| Tests de qualité | 13/13 PASS |
-| Pipeline automatisé | InfoClimat via Meltano (données fraîches) |
-| Données historiques | Weather Underground via fichiers Excel (jan-jul 2024) |
+| Observations totales | 9 463 (dédupliquées, une ligne par station et par horodatage) |
+| Tests de qualité | 14/14 PASS (validés en local et en production AWS) |
+| Pipeline automatisé | InfoClimat via Meltano — période configurable via .env |
+| Données historiques | InfoClimat (JSON) + Weather Underground (Excel) — semaine du 1-7 octobre 2024 |
+| Données fraîches | InfoClimat jusqu'au 8 juillet 2026 (relevés toutes les 10 min) |
 | Déploiement | AWS RDS PostgreSQL (eu-west-3 Paris) |
 
 ---
@@ -24,18 +25,22 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 ### Réseau InfoClimat — Pipeline automatisé (Meltano)
 | Station | Code | Données |
 |---|---|---|
-| Bergues | 000R5 | Automatique — synchronisation toutes les 10 min |
-| Hazebrouck | STATIC0010 | Automatique — synchronisation toutes les 10 min |
-| Armentières | 00052 | Historique octobre 2024 |
-| Lille-Lesquin | 07015 | Historique octobre 2024 |
+| Bergues | 000R5 | Automatique (relevés 10 min) + historique 1-7 oct. 2024 |
+| Hazebrouck | STATIC0010 | Automatique (relevés 10 min) + historique 1-7 oct. 2024 |
+| Armentières | 00052 | Historique 1-7 octobre 2024 |
+| Lille-Lesquin | 07015 | Historique 5-7 octobre 2024 |
+
+> La période de synchronisation est configurable via les variables INFOCLIMAT_START / INFOCLIMAT_END du fichier .env (pas de dates en dur dans le code). Un script de secours `load_infoclimat_api.py` (API identique, mêmes tables, même clé de déduplication) est fourni pour les postes où une politique de sécurité bloque les exécutables des plugins Meltano.
 
 ### Réseau Weather Underground — Fichiers Excel manuels
 | Station | Code | Données |
 |---|---|---|
-| La Madeleine (FR) | ILAMAD25 | Historique janvier-juillet 2024 |
-| Ichtegem (BE) | IICHTE19 | Historique janvier-juillet 2024 |
+| La Madeleine (FR) | ILAMAD25 | Historique 1-7 octobre 2024 (relevés ~5 min) |
+| Ichtegem (BE) | IICHTE19 | Historique 1-7 octobre 2024 (relevés ~5 min) |
 
-> Note : l'API Weather Underground n'est pas accessible publiquement sans posséder une station personnelle enregistrée. Les données ont été intégrées via des fichiers Excel fournis par l'équipe. Les fichiers sont à placer dans forecast_meltano/data/ (voir README du dossier).
+> Note : l'API Weather Underground n'est pas accessible publiquement sans posséder une station personnelle enregistrée. Les données ont été intégrées via des fichiers Excel fournis par l'équipe (un onglet par jour, nommage JJMMAA). Les fichiers sont à placer dans forecast_meltano/data/ (voir README du dossier).
+>
+> Les sources historiques InfoClimat et Weather Underground couvrent la même semaine (1-7 octobre 2024), ce qui permet aux Data Scientists de croiser les relevés des 6 stations sur une période commune.
 
 ---
 
@@ -57,20 +62,21 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
     ├── docker-compose.yml
     ├── migrate_to_rds.py
     ├── forecast_meltano/
-    │   ├── meltano.yml
+    │   ├── meltano.yml            (dates configurables via .env)
     │   ├── schemas/
     │   │   ├── bergues.json
     │   │   └── hazebrouck.json
     │   ├── data/
-    │   │   └── README.md  (instructions fichiers Excel WU)
+    │   │   └── README.md          (instructions fichiers Excel WU)
+    │   ├── load_infoclimat_api.py (script de secours API InfoClimat)
     │   ├── load_infoclimat_json.py
     │   └── load_weather_underground.py
     └── forecast_dbt/
         ├── dbt_project.yml
         ├── packages.yml
         └── models/
-            ├── staging/       (6 modèles - vues)
-            ├── intermediate/  (1 modèle - vue)
+            ├── staging/       (8 modèles - vues)
+            ├── intermediate/  (1 modèle - vue, union + déduplication)
             └── marts/         (2 modèles - tables + tests)
 
 ---
@@ -84,16 +90,17 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
     latitude / longitude          pressure_hpa
     elevation_m                   humidity_percent
     network                       wind_speed_kmh
-    hardware                      rain_1h_mm / uv_index
+    hardware / software           rain_1h_mm / uv_index
 
 ---
 
-## Tests de qualité : 13/13 PASS
+## Qualité des données : 14/14 tests PASS
 
-**Structurels (7)**
+**Structurels (8)**
 - unique, not_null sur les clés de la dimension
 - not_null sur observed_at_utc et station_key (faits)
 - relationships : clé étrangère station_key entre faits et dimension
+- unicité (station_key, observed_at_utc) : une seule ligne par station et par horodatage dans la table de faits (dbt_utils.unique_combination_of_columns)
 
 **Métier (6) via dbt_utils**
 - Température : -25°C à 45°C (Hauts-de-France)
@@ -102,6 +109,10 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 - Vent : 0 à 250 km/h
 - UV : 0 à 16
 - Réseau : infoclimat ou weather_underground
+
+**Protections en amont (couche RAW)**
+- Clés primaires (id_station, dh_utc) sur les tables chargées par script : les rechargements accidentels ne créent aucun doublon (ON CONFLICT DO NOTHING)
+- Déduplication dans le modèle intermediate en cas de recouvrement entre le flux Meltano et les données historiques
 
 ---
 
@@ -117,10 +128,14 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
     # Créer forecast_meltano/.env avec :
     # TAP_INFOCLIMAT_TOKEN=votre_token
     # RDS_PASSWORD=votre_mdp_rds
+    # INFOCLIMAT_START=2026-07-01
+    # INFOCLIMAT_END=2026-07-08
 
     # 4. Pipeline InfoClimat (automatique)
     cd forecast_meltano
     meltano run tap-infoclimat target-postgres
+    # (ou, si les plugins Meltano sont bloqués par la politique de sécurité du poste :)
+    python load_infoclimat_api.py
 
     # 5. Ingestion données historiques JSON
     python load_infoclimat_json.py
@@ -134,7 +149,8 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
     dbt run
     dbt test
 
-    # 8. Transformations DBT (production AWS)
+    # 8. Migration des données brutes vers AWS puis transformations en production
+    python ../migrate_to_rds.py
     dbt run --target prod
     dbt test --target prod
 
@@ -145,17 +161,16 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 - Secrets en variables d'environnement (.env non versionné)
 - Alerte GitGuardian détectée et corrigée en juin 2026
 - Profil DBT prod utilise env_var('RDS_PASSWORD')
-- .gitignore : venv/, .meltano/, .env, fichiers volumineux
+- .gitignore : venv/, .meltano/, .env, fichiers de données volumineux
 
 ---
 
 ## Points en attente
 
 - **Weather Underground automatisation** : synchronisation manuelle via fichiers Excel — API non accessible sans posséder une station enregistrée
-- **ECS + CloudWatch** : automatisation des tâches Meltano sur AWS
+- **ECS + CloudWatch** : planification des tâches Meltano/DBT sur AWS et centralisation des logs
 - **Secrets Manager** : rotation automatique des clés RDS
-- **Armentières / Lille-Lesquin** : données limitées à octobre 2024 (stations peu actives sur l'API InfoClimat)
 
 ---
 
-**Auteur** : Data Engineer — GreenCoop Hauts-de-France | Forecast 2.0 | Juin 2026
+**Auteur** : Data Engineer — GreenCoop Hauts-de-France | Forecast 2.0 | Juillet 2026
