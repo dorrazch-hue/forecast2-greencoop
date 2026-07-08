@@ -26,8 +26,14 @@ plugins:
         method: get
         format: json
         token: $TAP_INFOCLIMAT_TOKEN
-        start: "2026-06-07"
-        end: "2026-06-14"
+        # BUGFIX : les dates start/end etaient figees au 07-14 juin 2026,
+        # donc la "synchro toutes les 10 min" rejouait toujours la meme semaine.
+        # Elles sont maintenant injectees par variables d'environnement, ex :
+        #   export INFOCLIMAT_START=$(date -u -d '7 days ago' +%F)
+        #   export INFOCLIMAT_END=$(date -u +%F)
+        # (a poser dans .env ou dans le scheduler ECS/cron avant `meltano run`)
+        start: $INFOCLIMAT_START
+        end: $INFOCLIMAT_END
       streams:
       - name: bergues
         path: "?stations[]=000R5"

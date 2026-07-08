@@ -75,16 +75,23 @@ def in_to_mm(val):
         return None
 
 def make_ts(sheet_name, time_val):
+    # BUGFIX (verifie sur les fichiers Excel reels) : les onglets sont au format
+    # francais JJMMAA -> '011024' = 1er octobre 2024. Chaque onglet = 1 journee
+    # complete (~290 relevés de 00h04 a 23h59).
+    # L'ancien code lisait [:2] comme le mois et figeait le jour a 1 :
+    # les relevés du 1-7 octobre 2024 etaient enregistres comme
+    # 1er janvier, 1er fevrier, ... 1er juillet 2024.
     if time_val is None:
         return None
     try:
-        month = int(sheet_name[:2])
+        day = int(sheet_name[:2])
+        month = int(sheet_name[2:4])
         year = int("20" + sheet_name[4:6])
         if hasattr(time_val, "hour"):
-            return datetime(year, month, 1, time_val.hour, time_val.minute)
+            return datetime(year, month, day, time_val.hour, time_val.minute)
         fval = float(time_val)
         total_min = round(fval * 24 * 60)
-        return datetime(year, month, 1, (total_min // 60) % 24, total_min % 60)
+        return datetime(year, month, day, (total_min // 60) % 24, total_min % 60)
     except Exception:
         return None
 

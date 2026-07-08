@@ -35,11 +35,26 @@ for station_id in ["07015", "00052", "000R5", "STATIC0010"]:
         "pluie_cumul_0h VARCHAR, pluie_intensite VARCHAR, "
         "pluie_intensite_max_1h VARCHAR, uv VARCHAR, complements VARCHAR, "
         "ensoleillement VARCHAR, temperature_sol VARCHAR, temps_omm VARCHAR, "
-        "source VARCHAR, uv_index VARCHAR"
+        "source VARCHAR, uv_index VARCHAR, "
+        "PRIMARY KEY (id_station, dh_utc)"
         ");"
     )
 
 conn.commit()
+
+# BUGFIX : ON CONFLICT DO NOTHING ne fonctionnait pas car les tables n'avaient
+# aucune contrainte d'unicite -> chaque relance du script dupliquait les lignes.
+# On ajoute la cle primaire (id_station, dh_utc), y compris sur les tables
+# creees par d'anciennes executions du script.
+for table in ["lille_lesquin", "armentieres", "bergues_hist", "hazebrouck_hist"]:
+    try:
+        cur.execute(
+            "ALTER TABLE raw_infoclimat." + table +
+            " ADD CONSTRAINT " + table + "_pkey PRIMARY KEY (id_station, dh_utc);"
+        )
+        conn.commit()
+    except psycopg2.Error:
+        conn.rollback()  # contrainte deja presente (ou doublons a nettoyer d'abord)
 
 # Fichier JSON a placer dans forecast_meltano/data/
 # Voir forecast_meltano/data/README.md pour les instructions
