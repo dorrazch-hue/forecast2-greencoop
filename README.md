@@ -175,15 +175,6 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 - Monitoring CloudWatch : métriques RDS (CPU, connexions, stockage) et
   alarme `forecast2-db-cpu-alarm` (seuil CPU > 80 %, moyenne 5 min)
 
-**Perspectives d'évolution :**
-- **Planification cloud (ECS)** : exécution automatique de Meltano et DBT
-  via une tâche ECS Fargate déclenchée par EventBridge, logs applicatifs
-  centralisés dans CloudWatch (driver awslogs). Définition de tâche et
-  étapes de déploiement versionnées dans le dossier `aws/`.
-- **AWS Secrets Manager** : migration des secrets du .env avec rotation
-  automatique du mot de passe RDS.
-- **Weather Underground** : ingestion via fichiers Excel par conception —
-  l'API n'est pas accessible sans posséder une station enregistrée.
 
 ---
 
