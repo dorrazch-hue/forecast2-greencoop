@@ -38,7 +38,7 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 | La Madeleine (FR) | ILAMAD25 | Historique 1-7 octobre 2024 (relevés ~5 min) |
 | Ichtegem (BE) | IICHTE19 | Historique 1-7 octobre 2024 (relevés ~5 min) |
 
-> Note : l'API Weather Underground n'est pas accessible publiquement sans posséder une station personnelle enregistrée. Les données ont été intégrées via des fichiers Excel fournis par l'équipe (un onglet par jour, nommage JJMMAA). Les fichiers sont à placer dans forecast_meltano/data/ (voir README du dossier).
+> Note : l'API Weather Underground n'est pas accessible publiquement sans posséder une station enregistrée. Les données ont été intégrées via des fichiers Excel fournis par l'équipe (un onglet par jour, nommage JJMMAA). Les fichiers sont à placer dans forecast_meltano/data/ (voir README du dossier).
 >
 > Les sources historiques InfoClimat et Weather Underground couvrent la même semaine (1-7 octobre 2024), ce qui permet aux Data Scientists de croiser les relevés des 6 stations sur une période commune.
 
@@ -165,12 +165,22 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 
 ---
 
-## Points en attente
+## Supervision en place et perspectives
 
-- **Weather Underground automatisation** : synchronisation manuelle via fichiers Excel — API non accessible sans posséder une station enregistrée
-- **ECS + CloudWatch** : planification des tâches Meltano/DBT sur AWS et centralisation des logs
-- **Secrets Manager** : rotation automatique des clés RDS
+**Déjà actif sur AWS :**
+- Sauvegardes automatiques RDS (rétention 7 jours)
+- Monitoring CloudWatch : métriques RDS (CPU, connexions, stockage) et
+  alarme `forecast2-db-cpu-alarm` (seuil CPU > 80 %, moyenne 5 min)
+
+**Perspectives d'évolution :**
+- **Planification cloud (ECS)** : exécution automatique de Meltano et DBT
+  via une tâche ECS Fargate déclenchée par EventBridge, logs applicatifs
+  centralisés dans CloudWatch (driver awslogs). Prochaine itération.
+- **AWS Secrets Manager** : migration des secrets du .env avec rotation
+  automatique du mot de passe RDS.
+- **Weather Underground** : ingestion via fichiers Excel par conception —
+  l'API n'est pas accessible sans posséder une station enregistrée.
 
 ---
 
-**Auteur** : Data Engineer — GreenCoop Hauts-de-France | Forecast 2.0 | Juillet 2026
+cherif Dorra : Data Engineer — GreenCoop Hauts-de-France | Forecast 2.0 | Juillet 2026
