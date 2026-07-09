@@ -1,0 +1,41 @@
+{
+  "family": "forecast2-elt-pipeline",
+  "requiresCompatibilities": ["FARGATE"],
+  "networkMode": "awsvpc",
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "forecast2-elt",
+      "image": "<ACCOUNT_ID>.dkr.ecr.eu-west-3.amazonaws.com/forecast2-elt:latest",
+      "essential": true,
+      "command": [
+        "sh", "-c",
+        "meltano run tap-infoclimat target-postgres && dbt run --target prod && dbt test --target prod"
+      ],
+      "environment": [
+        { "name": "INFOCLIMAT_START", "value": "" },
+        { "name": "INFOCLIMAT_END", "value": "" }
+      ],
+      "secrets": [
+        {
+          "name": "TAP_INFOCLIMAT_TOKEN",
+          "valueFrom": "arn:aws:secretsmanager:eu-west-3:<ACCOUNT_ID>:secret:forecast2/infoclimat-token"
+        },
+        {
+          "name": "RDS_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:eu-west-3:<ACCOUNT_ID>:secret:forecast2/rds-password"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/forecast2-elt",
+          "awslogs-region": "eu-west-3",
+          "awslogs-stream-prefix": "pipeline"
+        }
+      }
+    }
+  ]
+}
