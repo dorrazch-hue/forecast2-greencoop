@@ -61,6 +61,9 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
     forecast2-greencoop/
     ├── docker-compose.yml
     ├── migrate_to_rds.py
+    ├── aws/
+    │   ├── ecs-task-definition.json   (tâche Fargate cible)
+    │   └── README.md                  (architecture de planification)
     ├── forecast_meltano/
     │   ├── meltano.yml            (dates configurables via .env)
     │   ├── schemas/
@@ -175,7 +178,8 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 **Perspectives d'évolution :**
 - **Planification cloud (ECS)** : exécution automatique de Meltano et DBT
   via une tâche ECS Fargate déclenchée par EventBridge, logs applicatifs
-  centralisés dans CloudWatch (driver awslogs). Prochaine itération.
+  centralisés dans CloudWatch (driver awslogs). Définition de tâche et
+  étapes de déploiement versionnées dans le dossier `aws/`.
 - **AWS Secrets Manager** : migration des secrets du .env avec rotation
   automatique du mot de passe RDS.
 - **Weather Underground** : ingestion via fichiers Excel par conception —
@@ -183,4 +187,4 @@ Pipeline ELT intégrant 6 stations météo semi-professionnelles pour alimenter 
 
 ---
 
-cherif Dorra : Data Engineer — GreenCoop Hauts-de-France | Forecast 2.0 | Juillet 2026
+Cherif Dorra : Data Engineer — GreenCoop Hauts-de-France | Forecast 2.0 | Juillet 2026
